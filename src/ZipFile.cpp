@@ -6,6 +6,10 @@
 #include "ZipFile.h"
 #include "SDLGL.h"
 
+#ifdef __vita__
+#include <vitasdk.h>
+#endif
+
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
@@ -50,17 +54,17 @@ void Error(const char* fmt, ...)
 	exit(0);
 }
 
-static void* zip_alloc(void* ctx, unsigned int items, unsigned int size)
+static inline __attribute__((always_inline)) void* zip_alloc(void* ctx, unsigned int items, unsigned int size)
 {
 	return malloc(items * size);
 }
 
-static void zip_free(void* ctx, void* ptr)
+static inline __attribute__((always_inline)) void zip_free(void* ctx, void* ptr)
 {
 	free(ptr);
 }
 
-static int16_t _ReadShort(FILE* fp)
+static inline __attribute__((always_inline)) int16_t _ReadShort(FILE* fp)
 {
 	int16_t sData = 0;
 
@@ -71,7 +75,7 @@ static int16_t _ReadShort(FILE* fp)
 	return sData;
 }
 
-static int32_t _ReadInt(FILE* fp)
+static inline __attribute__((always_inline)) int32_t _ReadInt(FILE* fp)
 {
 	int32_t iData = 0;
 
@@ -89,7 +93,42 @@ ZipFile::ZipFile() {
 ZipFile::~ZipFile() {
 }
 
+#ifdef __vita__
+void ZipFile::scanDir(const char *name) {
+	int dir = sceIoDopen(name);
+	if (dir < 0) {
+		sceClibPrintf("Cannot find %s\n", name);
+		abort();
+	}
+	
+	//sceClibPrintf("Scanning %s\n", name);
+	SceIoDirent fd;
+	while (sceIoDread(dir, &fd) > 0) {
+		if (SCE_S_ISDIR(fd.d_stat.st_mode)) {
+			char subpath[512];
+			sprintf(subpath, "%s/%s", name, fd.d_name);
+			scanDir(subpath);
+		} else {
+			sprintf(entry[entry_count].name, "%s/%s", name, fd.d_name);
+			entry[entry_count].usize = fd.d_stat.st_size;
+			entry[entry_count].offset = entry_count;
+			entry_count++;
+		}
+	}
+	
+	sceIoDclose(dir);
+}
+#endif
+
 void ZipFile::findAndReadZipDir(int startoffset) {
+#ifdef __vita__
+	scanDir(this->path);
+	int dir = sceIoDopen(this->path);
+	if (dir < 0) {
+		sceClibPrintf("Cannot find %s\n", this->path);
+		abort();
+	}
+#else
 	int sig, offset, count;
 	int namesize, metasize, commentsize;
 	int i;
@@ -146,10 +185,17 @@ void ZipFile::findAndReadZipDir(int startoffset) {
 		fseek(this->file, metasize, SEEK_CUR);
 		fseek(this->file, commentsize, SEEK_CUR);
 	}
+#endif
 }
 
 void ZipFile::openZipFile(const char* name) {
-
+#ifdef __vita__
+	//sceClibPrintf("Opening %s\n", name);
+	memcpy(this->path, name, strlen(name) - 4);
+	this->path[strlen(name) - 4] = 0;
+	//sceClibPrintf("Translated into %s\n", this->path);
+	findAndReadZipDir(0);
+#else
 	uint8_t buf[512];
 	int filesize, back, maxback;
 	int i, n;
@@ -182,9 +228,11 @@ void ZipFile::openZipFile(const char* name) {
 	}
 
 	Error("cannot find end of central directory\n");
+#endif
 }
 
 void ZipFile::closeZipFile() {
+#ifndef __vita__
 	if (this) {
 		if (this->entry) {
 			free(this->entry);
@@ -196,9 +244,28 @@ void ZipFile::closeZipFile() {
 			this->file = nullptr;
 		}
 	}
+#endif
 }
 
 uint8_t* ZipFile::readZipFileEntry(const char* name, int* sizep) {
+#ifdef __vita__
+	char fullpath[512];
+	sprintf(fullpath, "%s/%s", this->path, name);
+	//sceClibPrintf("readZipFileEntry %s\n", fullpath);
+	FILE *f = fopen(fullpath, "rb");
+	if (!f) {
+		sceClibPrintf("Cannot open %s\n", fullpath);
+		abort();
+	}
+	fseek(f, 0, SEEK_END);
+	*sizep = ftell(f);
+	fseek(f, 0, SEEK_SET);
+	uint8_t *res = (uint8_t *)std::malloc(*sizep);
+	fread(res, 1, *sizep, f);
+	fclose(f);
+	//sceClibPrintf("Done\n");
+	return res;
+#else
 	zip_entry_t* entry = nullptr;
 	int i, sig, general, method, namelength, extralength;
 	uint8_t* cdata;
@@ -290,4 +357,5 @@ uint8_t* ZipFile::readZipFileEntry(const char* name, int* sizep) {
 	}
 
 	return nullptr;
+#endif
 }

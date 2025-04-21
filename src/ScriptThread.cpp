@@ -1749,8 +1749,11 @@ uint32_t ScriptThread::run() {
                 app->sound->stopSound(resID + 1000, false);
                 break;
             }
-
+#ifdef __vita__
+            case 0xFF: {
+#else
             case Enums::EV_END: {
+#endif
                 if (this->stackPtr != 0) {
                     app->Error("The frame pointer should be zero if the script has completed.", 102);
                 }

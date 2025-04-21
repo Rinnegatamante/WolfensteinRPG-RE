@@ -10,16 +10,13 @@ Image::Image() {
 }
 
 Image::~Image() {
-    if (this) {
-        if (this->piDIB) {
-            this->piDIB->~IDIB();
-            free(this->piDIB);
-        }
-        this->piDIB = nullptr;
-        glDeleteTextures(1, &this->texture);
-        this->texture = -1;
-        free(this);
+    if (this->piDIB) {
+        this->piDIB->~IDIB();
+        std::free(this->piDIB);
     }
+    this->piDIB = nullptr;
+    glDeleteTextures(1, &this->texture);
+    this->texture = -1;
 }
 
 void Image::CreateTexture(uint16_t* data, uint32_t width, uint32_t height) {
@@ -59,9 +56,9 @@ void Image::DrawTexture(int texX, int texY, int texW, int texH, int posX, int po
     float scaleX, scaleY;
     float vp[12];
     float st[8];
-
+#ifndef __vita__
     PFNGLACTIVETEXTUREPROC glActiveTexture = (PFNGLACTIVETEXTUREPROC)SDL_GL_GetProcAddress("glActiveTexture");
-
+#endif
     this->setRenderMode(renderMode);
     scaleW = (float)texW * 0.5f;
     scaleH = (float)texH * 0.5f;

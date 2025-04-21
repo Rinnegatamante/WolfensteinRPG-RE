@@ -78,10 +78,10 @@ bool gles::ClearBuffer(int color) {
 }
 
 void gles::SetGLState() {
-
+#ifndef __vita__
 	PFNGLACTIVETEXTUREPROC glActiveTexture = (PFNGLACTIVETEXTUREPROC)SDL_GL_GetProcAddress("glActiveTexture");
 	PFNGLCLIENTACTIVETEXTUREPROC glClientActiveTexture = (PFNGLCLIENTACTIVETEXTUREPROC)SDL_GL_GetProcAddress("glClientActiveTexture");
-
+#endif
 	glViewport(this->vPortRect[0], this->vPortRect[1], this->vPortRect[2], this->vPortRect[3]);
 	glScissor(this->vPortRect[0], this->vPortRect[1], this->vPortRect[2], this->vPortRect[3]);
 	glMatrixMode(GL_MODELVIEW);
@@ -140,8 +140,15 @@ void gles::BeginFrame(int x, int y, int w, int h, int* mtxView, int* mtxProjecti
 	this->vPortRect[2] = gles::scale * w;
 	this->vPortRect[3] = gles::scale * h;
 
+#ifdef __vita__
+	this->vPortRect[0] *= 960.0f / 480.0f;
+	this->vPortRect[1] *= 544.0f / 320.0f;
+	this->vPortRect[2] *= 960.0f / 480.0f;
+	this->vPortRect[3] *= 544.0f / 320.0f;
+#else
 	CAppContainer::getInstance()->sdlGL->transformCoord2f((float*)&this->vPortRect[0], (float*)&this->vPortRect[1]);
 	CAppContainer::getInstance()->sdlGL->transformCoord2f((float*)&this->vPortRect[2], (float*)&this->vPortRect[3]);
+#endif
 #endif
 	
 	//printf("this->vPortRect[0] %d\n", this->vPortRect[0]);
@@ -224,8 +231,13 @@ void gles::ResetGLState() {
 	this->renderMode = -1;
 	glDisable(GL_FOG);
 	glDisable(GL_BLEND);
+#ifdef __vita__
+	glViewport(0, 0, 960, 544);
+	glScissor(0, 0, 960, 544);
+#else
 	glViewport(0, 0, width, height);
 	glScissor(0, 0, width, height);
+#endif
 	//glViewport(0, 0, 320, 480);
 	//glScissor(0, 0, 320, 480);
 	glMatrixMode(GL_PROJECTION);
@@ -317,6 +329,9 @@ bool gles::RasterizeConvexPolygon(int numVerts, TGLVert* verts) {
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glMatrixMode(GL_PROJECTION);
+#ifdef __vita__
+		glLoadIdentity();
+#else
 		memset(projectionMatrix, 0, sizeof(projectionMatrix));
 #if 0 // Iphone
 		projectionMatrix[1] = -1.0;	// {0.0, -1.0, 0.0, 0.0}
@@ -328,6 +343,7 @@ bool gles::RasterizeConvexPolygon(int numVerts, TGLVert* verts) {
 		projectionMatrix[10] = 1.0;	// {0.0, 0.0, 1.0, 0.0}
 		projectionMatrix[15] = 1.0;	// {0.0, 0.0, 0.0, 1.0}
 		glLoadMatrixf(projectionMatrix);
+#endif
 
 		assert(numVerts <= MAX_GLVERTS);
 
@@ -401,6 +417,9 @@ bool gles::RasterizeConvexPolygon(int numVerts, GLVert* verts) {
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glMatrixMode(GL_PROJECTION);
+#ifdef __vita__
+		glLoadIdentity();
+#else
 		memset(projectionMatrix, 0, sizeof(projectionMatrix));
 #if 0 // Iphone
 		projectionMatrix[1] = -1.0;	// {0.0, -1.0, 0.0, 0.0}
@@ -412,7 +431,7 @@ bool gles::RasterizeConvexPolygon(int numVerts, GLVert* verts) {
 		projectionMatrix[10] = 1.0;	// {0.0, 0.0, 1.0, 0.0}
 		projectionMatrix[15] = 1.0;	// {0.0, 0.0, 0.0, 1.0}
 		glLoadMatrixf(projectionMatrix);
-
+#endif
 		assert(numVerts <= MAX_GLVERTS);
 
 		if (this->render->isSkyMap) {
@@ -1145,7 +1164,7 @@ void gles::CreateTextureForMediaID(int n, int mediaID, bool b) {
 bool gles::DrawSkyMap() {
 	GLVert v5[4]; // [sp+4h] [bp-D0h] BYREF
 
-	if (this->isInit) {
+	if (this->isInit ) {
 		this->SetupTexture(Enums::TILENUM_SKY_BOX, 0, 0, 0);
 		v5[0].x = -100;
 		v5[0].y = -100;
@@ -1173,9 +1192,9 @@ void gles::DrawPortalTexture(Image* img, int x, int y, int w, int h, float tx, f
 	float vp[12];
 	float st[8];
 	int texWidth, texHeight;
-
+#ifndef __vita__
 	PFNGLACTIVETEXTUREPROC glActiveTexture = (PFNGLACTIVETEXTUREPROC)SDL_GL_GetProcAddress("glActiveTexture");
-
+#endif
 	if (!img->piDIB)
 		return;
 
@@ -1272,7 +1291,23 @@ void gles::TexCombineShift(int r, int g, int b) { // [GEC]
 	color[0] = ((float)r / 255.0f);
 	color[1] = ((float)g / 255.0f);
 	color[2] = ((float)b / 255.0f);
-
+#ifdef __vita__
+	// glTexCombColorf
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+	glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
+	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_ADD);
+	glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_TEXTURE0);
+	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+	glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_CONSTANT);
+	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
+	// glTexCombReplaceAlpha
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
+	glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_TEXTURE0);
+	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+	glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
+	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+#else
 	// glTexCombColorf
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
 	glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
@@ -1288,4 +1323,5 @@ void gles::TexCombineShift(int r, int g, int b) { // [GEC]
 	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
 	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA, GL_PRIMARY_COLOR);
 	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+#endif
 }

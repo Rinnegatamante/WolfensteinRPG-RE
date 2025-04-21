@@ -58,7 +58,9 @@ bool SDLGL::Initialize() {
 	Uint32 flags;
 
 	if (!this->initialized) {
-		
+#ifdef __vita__
+		vglInitExtended(0, 960, 544, 4 * 1024 * 1024, SCE_GXM_MULTISAMPLE_4X);
+#endif
 		SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 		if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
 			printf("Could not initialize SDL: %s", SDL_GetError());
@@ -71,9 +73,13 @@ bool SDLGL::Initialize() {
 
 		this->oldResolutionIndex = -1;
 		this->resolutionIndex = 0;
+#ifdef __vita__
+		this->winVidWidth = 960;
+		this->winVidHeight = 544;
+#else
 		this->winVidWidth = sdlResVideoModes[this->resolutionIndex].width;//Applet::IOS_WIDTH*2;
 		this->winVidHeight = sdlResVideoModes[this->resolutionIndex].height;//Applet::IOS_HEIGHT*2;
-
+#endif
 		//this->winVidWidth = 1440;
 		//this->winVidHeight = 900;
 

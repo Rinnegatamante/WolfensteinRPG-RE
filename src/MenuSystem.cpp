@@ -242,7 +242,7 @@ bool MenuSystem::startup() {
 		this->m_infoButtons->AddButton(btnGameMenuInfo);
 	}
 
-	IS.~InputStream();
+	//IS.~InputStream();
 	return true;
 }
 
@@ -545,7 +545,7 @@ void MenuSystem::back() {
 	}
 
 	if (this->menu == Menus::MENU_MAIN_MORE_GAMES) {
-		this->background->~Image();
+		delete this->background;
 		this->background = nullptr;
 	}
 
@@ -3202,15 +3202,15 @@ void MenuSystem::startGame(bool b) {
 	Applet* app = CAppContainer::getInstance()->app;
 
 	if (this->background != this->imgMainBG) {
-		this->background->~Image();
+		delete this->background;
 	}
 
-	this->imgMainBG->~Image();
+	delete this->imgMainBG;
 
 	this->background = nullptr;
 	this->imgMainBG = nullptr;
 
-	this->imgLogo->~Image();
+	delete this->imgLogo;
 	this->imgLogo = nullptr;
 
 	app->sound->soundStop();
@@ -3972,7 +3972,7 @@ void MenuSystem::nextGamePage() {
 	if (this->moreGamesPage + 1 < 3) {
 		++this->moreGamesPage;
 
-		this->background->~Image();
+		delete this->background;
 		this->background = nullptr;
 
 		app->beginImageLoading();
@@ -4014,7 +4014,7 @@ void MenuSystem::prevGamePage() {
 
 	if (this->moreGamesPage - 1 >= 0) {
 		--this->moreGamesPage;
-		this->background->~Image();
+		delete this->background;
 		this->background = nullptr;
 
 		app->beginImageLoading();

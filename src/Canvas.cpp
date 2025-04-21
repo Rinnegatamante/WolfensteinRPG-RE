@@ -1103,41 +1103,41 @@ void Canvas::setState(int state) {
 		this->cocktailName->dispose();
 		this->mixingInstructions->dispose();
 
-		this->imgMixingBG->~Image();
+		delete this->imgMixingBG;
 		this->imgMixingBG = nullptr;
-		this->imgMixingHeadingPlate->~Image();
+		delete this->imgMixingHeadingPlate;
 		this->imgMixingHeadingPlate = nullptr;
-		this->imgMixingTTRedNormal->~Image();
+		delete this->imgMixingTTRedNormal;
 		this->imgMixingTTRedNormal = nullptr;
-		this->imgMixingTTRedSelected->~Image();
+		delete this->imgMixingTTRedSelected;
 		this->imgMixingTTRedSelected = nullptr;
-		this->imgMixingTTRedEmpty->~Image();
+		delete this->imgMixingTTRedEmpty;
 		this->imgMixingTTRedEmpty = nullptr;
-		this->imgMixingTTGreenNormal->~Image();
+		delete this->imgMixingTTGreenNormal;
 		this->imgMixingTTGreenNormal = nullptr;
-		this->imgMixingTTGreenSelected->~Image();
+		delete this->imgMixingTTGreenSelected;
 		this->imgMixingTTGreenSelected = nullptr;
-		this->imgMixingTTGreenEmpty->~Image();
+		delete this->imgMixingTTGreenEmpty;
 		this->imgMixingTTGreenEmpty = nullptr;
-		this->imgMixingTTBludeNormal->~Image();
+		delete this->imgMixingTTBludeNormal;
 		this->imgMixingTTBludeNormal = nullptr;
-		this->imgMixingTTBludeSelected->~Image();
+		delete this->imgMixingTTBludeSelected;
 		this->imgMixingTTBludeSelected = nullptr;
-		this->imgMixingTTBludeEmpty->~Image();
+		delete this->imgMixingTTBludeEmpty;
 		this->imgMixingTTBludeEmpty = nullptr;
-		this->imgMixingSyringe->~Image();
+		delete this->imgMixingSyringe;
 		this->imgMixingSyringe = nullptr;
-		this->imgMixingSyringeSelected->~Image();
+		delete this->imgMixingSyringeSelected;
 		this->imgMixingSyringeSelected = nullptr;
-		this->imgMixingSyringeRed->~Image();
+		delete this->imgMixingSyringeRed;
 		this->imgMixingSyringeRed = nullptr;
-		this->imgMixingSyringeGreen->~Image();
+		delete this->imgMixingSyringeGreen;
 		this->imgMixingSyringeGreen = nullptr;
-		this->imgMixingSyringeBlue->~Image();
+		delete this->imgMixingSyringeBlue;
 		this->imgMixingSyringeBlue = nullptr;
-		this->imgMixingNumbersPlate->~Image();
+		delete this->imgMixingNumbersPlate;
 		this->imgMixingNumbersPlate = nullptr;
-		this->imgMixingSyringeNumbersPlate->~Image();
+		delete this->imgMixingSyringeNumbersPlate;
 		this->imgMixingSyringeNumbersPlate = nullptr;
 
 	}
@@ -1881,7 +1881,7 @@ void Canvas::loadEpilogueText() {
 }
 
 void Canvas::disposeIntro() {
-	this->imgTravelBG->~Image();
+	delete this->imgTravelBG;
 	this->imgTravelBG = nullptr;
 	this->dialogBuffer->dispose();
 	this->dialogBuffer = nullptr;
@@ -1890,7 +1890,7 @@ void Canvas::disposeIntro() {
 
 void Canvas::disposeEpilogue() {
 	Applet* app = CAppContainer::getInstance()->app;
-	this->imgTravelBG->~Image();
+	delete this->imgTravelBG;
 	this->imgTravelBG = nullptr;
 	this->dialogBuffer->dispose();
 	this->dialogBuffer = nullptr;
@@ -2775,8 +2775,8 @@ bool Canvas::handleEvent(int key) {
 			if ((keyAction == Enums::ACTION_FIRE && this->scrollingTextDone) || key == 18) {
 				this->endingGame = false;
 				app->sound->soundStop();
-				app->menuSystem->imgMainBG->~Image();
-				app->menuSystem->imgLogo->~Image();
+				delete app->menuSystem->imgMainBG;
+				delete app->menuSystem->imgLogo;
 				app->menuSystem->imgMainBG = app->loadImage(Resources::RES_LOGO_BMP_GZ, true);
 				app->menuSystem->imgLogo = app->loadImage(Resources::RES_LOGO2_BMP_GZ, true);
 				app->menuSystem->background = app->menuSystem->imgMainBG;
@@ -3615,7 +3615,7 @@ void Canvas::logoState() {
 	if (this->pacLogoIndex == -1 || app->upTimeMs - this->pacLogoTime > 2500) {
 		if (this->pacLogoIndex == 0) {
 			if (this->forceError) {
-				this->imgStartupLogo->~Image();
+				delete this->imgStartupLogo;
 				this->imgStartupLogo = nullptr;
 
 				this->setState(Canvas::ST_ERROR);
@@ -3795,7 +3795,7 @@ void Canvas::drawAutomap(Graphics* graphics, bool b) {
 												b5 = true;
 											}
 											else if ((n16 & 0x400000) != 0x0) {
-												color = 0xFFF746C59;
+												color = 0xFF746C59;
 												b5 = true;
 											}
 											else if (nextOnTile->def->eType == Enums::ET_NONOBSTRUCTING_SPRITEWALL) {
@@ -4244,10 +4244,10 @@ void Canvas::backToMain(bool b) {
 	app->render->unloadMap();
 	app->render->endFade();
 
-	app->menuSystem->imgMainBG->~Image();
+	delete app->menuSystem->imgMainBG;
 	app->menuSystem->imgMainBG = app->loadImage("logo.bmp", true);
 
-	app->menuSystem->imgLogo->~Image();
+	delete app->menuSystem->imgLogo;
 	app->menuSystem->imgLogo = app->loadImage("logo2.bmp", true);
 
 	if (b) {
@@ -5089,13 +5089,13 @@ void Canvas::mixingState(Graphics *graphics) {
 
 		switch (this->stateVars[3])
 		{
-		case 0xFFCC0000:
+		case (int)0xFFCC0000:
 			graphics->drawImage(this->imgMixingSyringeRed, v18, 132, 0, 0, 0);
 			break;
-		case 0xFF00CC00:
+		case (int)0xFF00CC00:
 			graphics->drawImage(this->imgMixingSyringeGreen, v18, 132, 0, 0, 0);
 			break;
-		case 0xFF0000CC:
+		case (int)0xFF0000CC:
 			graphics->drawImage(this->imgMixingSyringeBlue, v18, 132, 0, 0, 0);
 			break;
 		}
@@ -5103,13 +5103,13 @@ void Canvas::mixingState(Graphics *graphics) {
 		v18 += imgMixingSyringeWidth;
 		switch (this->stateVars[2])
 		{
-		case 0xFFCC0000:
+		case (int)0xFFCC0000:
 			graphics->drawImage(this->imgMixingSyringeRed, v18, 132, 0, 0, 0);
 			break;
-		case 0xFF00CC00:
+		case (int)0xFF00CC00:
 			graphics->drawImage(this->imgMixingSyringeGreen, v18, 132, 0, 0, 0);
 			break;
-		case 0xFF0000CC:
+		case (int)0xFF0000CC:
 			graphics->drawImage(this->imgMixingSyringeBlue, v18, 132, 0, 0, 0);
 			break;
 		}
@@ -5117,13 +5117,13 @@ void Canvas::mixingState(Graphics *graphics) {
 		v18 += imgMixingSyringeWidth;
 		switch (this->stateVars[1])
 		{
-		case 0xFFCC0000:
+		case (int)0xFFCC0000:
 			graphics->drawImage(this->imgMixingSyringeRed, v18, 132, 0, 0, 0);
 			break;
-		case 0xFF00CC00:
+		case (int)0xFF00CC00:
 			graphics->drawImage(this->imgMixingSyringeGreen, v18, 132, 0, 0, 0);
 			break;
-		case 0xFF0000CC:
+		case (int)0xFF0000CC:
 			graphics->drawImage(this->imgMixingSyringeBlue, v18, 132, 0, 0, 0);
 			break;
 		}
@@ -5243,15 +5243,15 @@ void Canvas::popIngredient() {
 		return;
 	}
 	switch (this->stateVars[this->stateVars[0]]) {
-		case 0xFFCC0000: {
+		case (int)0xFFCC0000: {
 			++this->stateVars[6];
 			break;
 		}
-		case 0xFF00CC00: {
+		case (int)0xFF00CC00: {
 			++this->stateVars[7];
 			break;
 		}
-		case 0xFF0000CC: {
+		case (int)0xFF0000CC: {
 			++this->stateVars[8];
 			break;
 		}
@@ -5288,15 +5288,15 @@ void Canvas::updateMixingText() {
 		uint8_t b = 0;
 		for (int i = 0; i < 3; ++i) {
 			switch (this->stateVars[3 - i]) {
-				case 0xFFCC0000: {
+				case (int)0xFFCC0000: {
 					b += 16;
 					break;
 				}
-				case 0xFF00CC00: {
+				case (int)0xFF00CC00: {
 					b += 4;
 					break;
 				}
-				case 0xFF0000CC: {
+				case (int)0xFF0000CC: {
 					++b;
 					break;
 				}
@@ -5342,15 +5342,15 @@ void Canvas::mixCocktail() {
 	if (app->player->give(Enums::IT_INVENTORY, Enums::INV_FIRST_MIXABLE + this->stateVars[5], 1)) {
 		for (int i = 0; i < 3; ++i) {
 			switch (this->stateVars[3 - i]) {
-			case 0xFFCC0000: {
+			case (int)0xFFCC0000: {
 				--app->game->mixingStations[this->curStation + 1];
 				break;
 			}
-			case 0xFF00CC00: {
+			case (int)0xFF00CC00: {
 				--app->game->mixingStations[this->curStation + 2];
 				break;
 			}
-			case 0xFF0000CC: {
+			case (int)0xFF0000CC: {
 				--app->game->mixingStations[this->curStation + 3];
 				break;
 			}
@@ -5600,17 +5600,17 @@ void Canvas::endKickingGame() {
 		return;
 	}
 
-	this->hKickingBar->~Image();
+	delete this->hKickingBar;
 	this->hKickingBar = nullptr;
-	this->vKickingBar->~Image();
+	delete this->vKickingBar;
 	this->vKickingBar = nullptr;
-	this->imgChickenKicking_ScoreBG->~Image();
+	delete this->imgChickenKicking_ScoreBG;
 	this->imgChickenKicking_ScoreBG = nullptr;
-	this->imgChickenKicking_05Highlight->~Image();
+	delete this->imgChickenKicking_05Highlight;
 	this->imgChickenKicking_05Highlight = nullptr;
-	this->imgChickenKicking_20Highlight->~Image();
+	delete this->imgChickenKicking_20Highlight;
 	this->imgChickenKicking_20Highlight = nullptr;
-	this->imgChickenKicking_30Highlight->~Image();
+	delete this->imgChickenKicking_30Highlight;
 	this->imgChickenKicking_30Highlight = nullptr;
 
 	this->kickingPhase = 0;
@@ -6068,19 +6068,19 @@ void Canvas::initTravelMap() {
 }
 
 void Canvas::disposeTravelMap() {
-	this->imgTMArrow->~Image();
+	delete this->imgTMArrow;
 	this->imgTMArrow = nullptr;
-	this->imgTravelBG->~Image();
+	delete this->imgTravelBG;
 	this->imgTravelBG = nullptr;
-	this->imgMagGlass->~Image();
+	delete this->imgMagGlass;
 	this->imgMagGlass = nullptr;
-	this->imgMagBG->~Image();
+	delete this->imgMagBG;
 	this->imgMagBG = nullptr;
-	this->imgTMLevels->~Image();
+	delete this->imgTMLevels;
 	this->imgTMLevels = nullptr;
-	this->imgTMHighlight->~Image();
+	delete this->imgTMHighlight;
 	this->imgTMHighlight = nullptr;
-	this->imgFlak->~Image();
+	delete this->imgFlak;
 	this->imgFlak = nullptr;
 }
 
@@ -6286,21 +6286,21 @@ void Canvas::exitIntroMovie(bool b) {
 
 	app->game->cleanUpCamMemory();
 
-	this->imgProlog->~Image();
+	delete this->imgProlog;
 	this->imgProlog = nullptr;
-	this->imgProlog_0_1->~Image();
+	delete this->imgProlog_0_1;
 	this->imgProlog_0_1 = nullptr;
-	this->imgProlog_1_0->~Image();
+	delete this->imgProlog_1_0;
 	this->imgProlog_1_0 = nullptr;
-	this->imgProlog_1_1->~Image();
+	delete this->imgProlog_1_1;
 	this->imgProlog_1_1 = nullptr;
-	this->imgProlog_2_0->~Image();
+	delete this->imgProlog_2_0;
 	this->imgProlog_2_0 = nullptr;
-	this->imgProlog_2_1->~Image();
+	delete this->imgProlog_2_1;
 	this->imgProlog_2_1 = nullptr;
-	this->imgFire->~Image();
+	delete this->imgFire;
 	this->imgFire = nullptr;
-	this->imgFlak->~Image();
+	delete this->imgFlak;
 	this->imgFlak = nullptr;
 
 	if (this->dialogBuffer) {

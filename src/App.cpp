@@ -169,7 +169,7 @@ Image* Applet::createImage(InputStream* inputStream, bool isTransparentMask)
 {
 	Image* img;
 	int Width, Height, offBeg, BitsPerPixel, ColorsUsed, rgb, pitch;
-	img = (Image*)malloc(sizeof(Image));
+	img = new Image();
 	img->texture = -1;
 	img->piDIB = (IDIB*)malloc(sizeof(IDIB));
 	img->piDIB->pBmp = nullptr;
@@ -316,9 +316,11 @@ Image* Applet::createImage(InputStream* inputStream, bool isTransparentMask)
 		img->height = img->piDIB->height;
 	}
 	else {
-		img->~Image();
+		img->piDIB->~IDIB();
+		std::free(img->piDIB);
+		img->piDIB = nullptr;
+		delete img;
 		img = nullptr;
-
 		Error("Expected image bpp 4 or 8. Found bpp %d", BitsPerPixel);
 	}
 
@@ -336,7 +338,7 @@ Image* Applet::loadImage(char* fileName, bool isTransparentMask) {
 	img = this->createImage(&iStream, isTransparentMask);
 
 	iStream.close();
-	iStream.~InputStream();
+	//iStream.~InputStream();
 	return img;
 }
 
@@ -588,29 +590,29 @@ void Applet::loadRuntimeImages() {
 void Applet::freeStaticImages() {
 	if (this->initLoadImages) {
 		this->initLoadImages = false;
-		this->canvas->imgMapCursor->~Image();
+		delete this->canvas->imgMapCursor;
 		this->canvas->imgMapCursor = nullptr;
-		this->canvas->imgChatHook_Monster->~Image();
+		delete this->canvas->imgChatHook_Monster;
 		this->canvas->imgChatHook_Monster = nullptr;
-		this->canvas->imgChatHook_NPC->~Image();
+		delete this->canvas->imgChatHook_NPC;
 		this->canvas->imgChatHook_NPC = nullptr;
-		this->canvas->imgChatHook_Player->~Image();
+		delete this->canvas->imgChatHook_Player;
 		this->canvas->imgChatHook_Player = nullptr;
-		this->canvas->imgDialogScroll->~Image();
+		delete this->canvas->imgDialogScroll;
 		this->canvas->imgDialogScroll = nullptr;
-		this->canvas->imgClipboardBG->~Image();
+		delete this->canvas->imgClipboardBG;
 		this->canvas->imgClipboardBG = nullptr;
-		this->hud->imgScope->~Image();
+		delete this->hud->imgScope;
 		this->hud->imgScope = nullptr;
-		this->hud->imgDamageVignette->~Image();
+		delete this->hud->imgDamageVignette;
 		this->hud->imgDamageVignette = nullptr;
-		this->hud->imgActions->~Image();
+		delete this->hud->imgActions;
 		this->hud->imgActions = nullptr;
-		this->hud->imgBottomBarIcons->~Image();
+		delete this->hud->imgBottomBarIcons;
 		this->hud->imgBottomBarIcons = nullptr;
-		this->hud->imgHudFill->~Image();
+		delete this->hud->imgHudFill;
 		this->hud->imgHudFill = nullptr;
-		this->hud->imgIce->~Image();
+		delete this->hud->imgIce;
 		this->hud->imgIce = nullptr;
 	}
 }
